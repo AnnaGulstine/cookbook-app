@@ -1,13 +1,17 @@
 class RecipesController < ApplicationController
   def index
-    @recipes = Recipe.order(title: :asc)
+    if current_user
+      @recipes = current_user.recipes
+    else
+      redirect_to "/users/sign_in"
+    end
     sort_by = params[:sort_by]
     sort_order = params[:sort_order]
     vegetarian = params[:vegetarian]
     if sort_by 
       @recipes = Recipe.order(sort_by => sort_order)
     elsif vegetarian 
-      @recipes = Recipe.where('ingredients NOT LIKE ?', '%chicken%')
+      @recipes = Recipe.where("user_id = ? AND ingredients NOT LIKE ?", "#{current_user.id}", "%chicken%")
     end
   end
 
@@ -23,7 +27,6 @@ class RecipesController < ApplicationController
   end
 
   def new
-    render 'new.html.erb'
   end
 
   def create
